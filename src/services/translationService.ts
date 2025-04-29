@@ -1,4 +1,5 @@
-import { signLanguageDatabase, fallbackImage, type SignImage } from '@/data/signLanguageData';
+import { SignImage } from '@/data/signLanguageData';
+import { supabase } from '@/integrations/supabase/client';
 
 // Simple NLP preprocessing - This simulates more advanced AI techniques
 // but keeps the demo performant in the browser
@@ -13,28 +14,72 @@ const preprocessText = (text: string): string[] => {
   return cleanText.split(' ');
 };
 
+// Fetch sign images from Supabase database
+const fetchSignImages = async (words: string[]): Promise<SignImage[]> => {
+  if (words.length === 0) return [];
+  
+  try {
+    const { data, error } = await supabase
+      .from('sign_images')
+      .select('word, image_url, category')
+      .in('word', words);
+    
+    if (error) {
+      console.error('Error fetching sign images:', error);
+      throw error;
+    }
+    
+    // Map the data to SignImage type
+    return words.map(word => {
+      const signImage = data?.find(item => item.word === word);
+      
+      // If found in database, use it
+      if (signImage) {
+        return {
+          word: signImage.word,
+          imageUrl: signImage.image_url,
+          category: signImage.category || undefined
+        };
+      } 
+      
+      // Otherwise use fallback from local data
+      return { 
+        word, 
+        imageUrl: '/placeholder.svg',
+        category: 'unknown'
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch sign images:', error);
+    
+    // Return placeholder images as fallback
+    return words.map(word => ({ 
+      word, 
+      imageUrl: '/placeholder.svg',
+      category: 'unknown'
+    }));
+  }
+};
+
 // Perform word-by-word translation
-export const translateToSignLanguage = (text: string): SignImage[] => {
+export const translateToSignLanguage = async (text: string): Promise<SignImage[]> => {
   // Get individual words
   const words = preprocessText(text);
   
-  // Find corresponding sign language images
-  return words.map(word => {
-    const signImage = signLanguageDatabase.find(item => item.word === word);
-    return signImage || { ...fallbackImage, word };
-  });
+  // Fetch corresponding sign language images
+  return await fetchSignImages(words);
 };
 
 // Simulate advanced AI processing for better results
 // In a real app, this would use an actual NLP/AI algorithm
-export const enhancedTranslation = (text: string): SignImage[] => {
+export const enhancedTranslation = async (text: string): Promise<SignImage[]> => {
   console.log('Performing enhanced AI translation...');
   
   // Simple for demo - a real implementation would use more sophisticated techniques
   const words = preprocessText(text);
   
   // Process word by word, with context awareness
-  const result: SignImage[] = [];
+  const processedWords: string[] = [];
   
   for (let i = 0; i < words.length; i++) {
     const currentWord = words[i];
@@ -47,16 +92,14 @@ export const enhancedTranslation = (text: string): SignImage[] => {
     
     // Handle certain word combinations (simple example of context)
     if (currentWord === 'thank' && nextWord === 'you') {
-      result.push(signLanguageDatabase.find(item => item.word === 'thank') || { ...fallbackImage, word: 'thank you' });
+      processedWords.push('thank');
       i++; // Skip the next word since we've processed it
     } else {
-      // Regular lookup
-      const signImage = signLanguageDatabase.find(item => item.word === currentWord);
-      result.push(signImage || { ...fallbackImage, word: currentWord });
+      processedWords.push(currentWord);
     }
   }
   
-  return result;
+  return await fetchSignImages(processedWords);
 };
 
 // Speech recognition

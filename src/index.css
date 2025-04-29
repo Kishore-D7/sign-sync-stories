@@ -115,6 +115,15 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+/* Modified for a more subtle background */
+.page-background {
+  background-color: #f8f9fc;
+  background-image: 
+    linear-gradient(to right, rgba(243, 244, 246, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(243, 244, 246, 0.5) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
 .sign-image-container {
   background: rgba(255, 255, 255, 0.5);
   border-radius: 10px;
@@ -130,4 +139,14 @@
 
 .float-animation {
   animation: float 3s ease-in-out infinite;
+}
+
+/* Animation for sign language images */
+@keyframes sign-appear {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.sign-image {
+  animation: sign-appear 0.5s ease-out forwards;
 }
