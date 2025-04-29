@@ -8,6 +8,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Translate from "./pages/Translate";
 import NotFound from "./pages/NotFound";
+import AuthCallbackHandler from "./components/AuthCallbackHandler";
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/translate" element={<Translate />} />
+            <Route path="/auth/callback" element={<AuthCallbackHandler />} />
             <Route path="/" element={<Navigate to="/translate" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
