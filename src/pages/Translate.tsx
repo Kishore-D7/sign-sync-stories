@@ -20,6 +20,7 @@ import {
 import { translateToSignLanguage, enhancedTranslation, startSpeechRecognition } from '@/services/translationService';
 import { toast } from '@/components/ui/sonner';
 import { SignImage } from '@/data/signLanguageData';
+import PageLayout from '@/components/PageLayout';
 
 const Translate = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -32,6 +33,18 @@ const Translate = () => {
   const stopRecognitionRef = useRef<{ stop: () => void } | null>(null);
   const playIntervalRef = useRef<number | null>(null);
   const [useEnhancedAI, setUseEnhancedAI] = useState(true);
+
+  // Clean up interval on unmount
+  useEffect(() => {
+    return () => {
+      if (playIntervalRef.current) {
+        clearInterval(playIntervalRef.current);
+      }
+      if (stopRecognitionRef.current) {
+        stopRecognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
@@ -134,18 +147,6 @@ const Translate = () => {
     setCurrentSignIndex(0);
     handlePauseTranslation();
   };
-
-  // Clean up interval on unmount
-  useEffect(() => {
-    return () => {
-      if (playIntervalRef.current) {
-        clearInterval(playIntervalRef.current);
-      }
-      if (stopRecognitionRef.current) {
-        stopRecognitionRef.current.stop();
-      }
-    };
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-signlang-purple/5 to-signlang-blue/5">
